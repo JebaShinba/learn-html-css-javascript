@@ -1,0 +1,67 @@
+name: Frontend CI/CD Pipeline
+
+# Trigger the workflow on push or pull requests to the main branch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Install Node.js (if you're using any npm packages like linters or testing tools)
+    - name: Set up Node.js environment
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+
+    # Install dependencies if you are using any npm-based tools
+    - name: Install dependencies
+      run: npm install
+      working-directory: ./src/JS  # Adjust if you have a package.json in your project
+
+    # Lint HTML files
+    - name: Lint HTML files
+      run: |
+        npx htmlhint ./src/html/**/*.html
+
+    # Lint CSS files
+    - name: Lint CSS files
+      run: |
+        npx stylelint ./src/css/**/*.css
+
+    # Lint JS files
+    - name: Lint JS files
+      run: |
+        npx eslint ./src/JS/**/*.js
+
+    # Optional: Run unit tests if applicable
+    - name: Run tests
+      run: npm test  # If you have any tests defined in your project
+
+    # Optional: Build the static files (if you're using a build tool like Webpack)
+    - name: Build project
+      run: npm run build  # Adjust if you're using a bundler or build tool
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Deploy to GitHub Pages (or configure this for another service)
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./src/html  # Adjust this to the folder containing your HTML files
